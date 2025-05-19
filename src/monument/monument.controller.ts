@@ -7,27 +7,27 @@ import { UpdateMonumentDto } from './dto/update-monument.dto';
 export class MonumentController {
   constructor(private readonly monumentService: MonumentService) {}
 
-  @Post()
+  @Post('add')
   create(@Body() createMonumentDto: CreateMonumentDto) {
     return this.monumentService.create(createMonumentDto);
   }
 
-  @Get()
+  @Get('getAll')
   findAll() {
     return this.monumentService.findAll();
   }
 
-  @Get(':id')
+  @Get('get/:id')
   findOne(@Param('id') id: string) {
     return this.monumentService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Patch('update/:id')
   update(@Param('id') id: string, @Body() updateMonumentDto: UpdateMonumentDto) {
     return this.monumentService.update(+id, updateMonumentDto);
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   remove(@Param('id') id: string) {
     return this.monumentService.remove(+id);
   }
