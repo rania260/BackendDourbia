@@ -31,8 +31,4 @@ export class Destination {
 
   @Column({ nullable: true })
   site_web: string;
-
-  @Column({ nullable: true })
-  geom: string;
-  
 }

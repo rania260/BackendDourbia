@@ -11,6 +11,7 @@ import { DestinationModule } from './destination/destination.module';
 import { CircuitModule } from './circuit/circuit.module';
 import { MonumentModule } from './monument/monument.module';
 import { BlogModule } from './blog/blog.module';
+import { ReferenceModule } from './reference/reference.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { BlogModule } from './blog/blog.module';
     CircuitModule,
     MonumentModule,
     BlogModule,
+    ReferenceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

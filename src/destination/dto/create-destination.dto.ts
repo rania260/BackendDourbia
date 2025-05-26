@@ -27,7 +27,4 @@ export class CreateDestinationDto {
 
   @IsOptional()
   site_web: string;
-
-  @IsOptional()
-  geom: string;
 }
