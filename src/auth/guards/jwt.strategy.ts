@@ -8,18 +8,19 @@ import { Request } from 'express';
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (req: Request) => {
-          const cookieReq = req as Request & { cookies: Record<string, string> };
-          return cookieReq.cookies?.access_token || null;
-        },
-      ]),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: process.env.JWT_SECRET,
     });
   }
 
   async validate(payload: any) {
-    return { id: payload.sub, email: payload.email, name: payload.name };
+    console.log('Payload reçu dans JWT:', payload);
+    return {
+      id: payload.id || payload.sub,
+      email: payload.email,
+      username: payload.username || payload.name,
+      role: payload.role || payload.userRole
+    };
   }
 }

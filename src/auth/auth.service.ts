@@ -2,15 +2,18 @@ import { ConflictException, Injectable, InternalServerErrorException, NotFoundEx
 import { CreateUserDto } from './dto/create-auth.dto';
 import { UpdateUserDto } from './dto/update-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { USERROLES } from '../utils/enum';
 import { User } from './entities/user.entity';
+import { Partner } from '../partner/partner.entity';
+import { Expert } from '../expert/entities/expert.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt'; 
 import { SigninDto } from './dto/signin.dto';
 import { EmailService } from 'src/email/email.service';
 import { VerificationService } from 'src/verification/verification.service';
-import { Response } from 'express';
-
+import { CreateExpertDto } from '../expert/dto/create-expert.dto';
+import { compare } from 'bcrypt';
 
 
 @Injectable()
@@ -24,7 +27,7 @@ export class AuthService {
     private jwtService: JwtService, 
     private emailService: EmailService,
     private verificationTokenService: VerificationService,
-  ){}
+  ) {}
 //create user
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { email, username, password, country, region } = createUserDto;
@@ -43,11 +46,11 @@ export class AuthService {
         country,
         region,
         phone: '',
+        role: USERROLES.USER
     });
 
     return await this.userRepository.save(user);
 }
-
 
 async createUserLoggedInByGoogle(createUserDto: CreateUserDto): Promise<User> {
   const { email, username, password, country, region, avatar, emailVerifiedAt , googleId } = createUserDto;
@@ -75,8 +78,14 @@ async createUserLoggedInByGoogle(createUserDto: CreateUserDto): Promise<User> {
 
 //get all users
   async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+    return this.userRepository.find({
+      relations: {
+        partner: true
+      }
+    });
   }
+
+
 //get user by id
   async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
@@ -99,6 +108,20 @@ async createUserLoggedInByGoogle(createUserDto: CreateUserDto): Promise<User> {
     return this.userRepository.findOne({ where: { email } });
   }
 
+  async findOneWithRelations(where: any, relations: string[] = []): Promise<User | null> {
+    return this.userRepository.findOne({
+      where,
+      relations,
+    });
+  }
+
+//get user by name
+async searchUsers(username: string): Promise<User[]> {
+  return this.userRepository
+    .createQueryBuilder('user')
+    .where('user.username LIKE :username', { username: `%${username}%` })
+    .getMany();
+}
 
 // update user
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
@@ -157,7 +180,9 @@ async signup(createUserDto: CreateUserDto): Promise<{ user: User; message: strin
   }
 }
   // user Connexion with JWT 
-  async signin(signinDto: SigninDto, @Res({ passthrough: true }) res: Response): Promise<Partial<User>> {
+  async signin(signinDto: SigninDto): Promise<{ accessToken: string; user: any }> {
+    // DEBUG LOG
+    console.log('SIGNIN DTO:', signinDto);
     const { email, password } = signinDto;
   
     const user = await this.userRepository.findOne({ where: { email } });
@@ -187,24 +212,29 @@ async signup(createUserDto: CreateUserDto): Promise<{ user: User; message: strin
       }
     );
   
-    res.cookie('access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
-  
-    // ✅ Return only user data, not the token
-    return {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      role: user.role,
-      country: user.country,
-      region: user.region,
+    const result = {
+      accessToken: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        country: user.country,
+        region: user.region,
+      }
     };
+    console.log('SIGNIN RETURN:', result);
+    return result;
+
   }
   
+  //google
+  async validateGoogleUser(googleUser: CreateUserDto) {
+    const user = await this.findUserByEmail(googleUser.email);
+    if (user) return user;
+    return await this.create(googleUser);
+  }
+
   // Méthode pour obtenir le profil d'un utilisateur
   async getProfile(email:string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { email } });
@@ -214,31 +244,17 @@ async signup(createUserDto: CreateUserDto): Promise<{ user: User; message: strin
     }
     return user;
   }
-// // code verification
-// async generateEmailVerification(userId: number) {
-//   console.log("Génération de l'OTP pour le userId:", userId);
-  
-//   const user = await this.userRepository.findOne({ where: { id: userId } });
-//   if (!user) {
-//     throw new NotFoundException('User not found');
-//   }
 
-//   if (user.emailVerifiedAt) {
-//     throw new UnprocessableEntityException('Account already verified');
-//   }
-//   const otp = await this.verificationTokenService.generateOtp(user.id);
-//   console.log('OTP généré :', otp);
-  
-//   try {
-//     await this.emailService.sendEmail({
-//       subject: 'Dourbia - Account Verification',
-//       recipients: [{ address: user.email }],
-//       html: `<p>Hi ${user.username},</p><p>Votre code de vérification est: <strong>${otp}</strong></p>`,
-//     });
-//   } catch (error) {
-//     console.error("Erreur d'envoi d'email :", error);
-//   }
-// }
+  async validateUser(email: string, password: string) {
+    const user = await this.findByEmail(email);
+    if (!user) throw new UnauthorizedException('User not found!');
+    const isPasswordMatch = await compare(password, user.password);
+    if (!isPasswordMatch)
+      throw new UnauthorizedException('Invalid credentials');
+
+    return { id: user.id };
+  }
+
 async generateEmailVerification(userId: number) {
   console.log("Génération de l'OTP pour le userId:", userId);
   

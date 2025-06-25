@@ -12,6 +12,11 @@ import { CircuitModule } from './circuit/circuit.module';
 import { MonumentModule } from './monument/monument.module';
 import { BlogModule } from './blog/blog.module';
 import { ReferenceModule } from './reference/reference.module';
+import { PartnerModule } from './partner/partner.module';
+import { ExpertModule } from './expert/expert.module';
+import { FeedbackModule } from './feedback/feedback.module';
+import { ServiceModule } from './service/service.module';
+import { ContributionModule } from './contribution/contribution.module';
 
 @Module({
   imports: [
@@ -37,6 +42,11 @@ import { ReferenceModule } from './reference/reference.module';
     MonumentModule,
     BlogModule,
     ReferenceModule,
+    PartnerModule,
+    ExpertModule,
+    FeedbackModule,
+    ServiceModule,
+    ContributionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

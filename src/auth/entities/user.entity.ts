@@ -1,6 +1,10 @@
 import { Exclude } from '@nestjs/class-transformer';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 import { USERROLES } from '../../utils/enum';
+import { Partner } from '../../partner/partner.entity';
+import { Expert } from 'src/expert/entities/expert.entity';
+import { Feedback } from 'src/feedback/entities/feedback.entity';
+import { Contribution } from 'src/contribution/entities/contribution.entity';
 
 @Entity()
 export class User {
@@ -44,5 +48,19 @@ export class User {
 
   @Column({ nullable: true })
   googleId: string;
+
+  @OneToOne(() => Partner, partner => partner.user, { eager: true }) 
+  @JoinColumn()
+  partner: Partner;
+  
+  @OneToOne(() => Expert, expert => expert.user)
+  @JoinColumn()
+  expert: Expert;
+
+  @OneToMany(() => Feedback, (feedback) => feedback.user)
+  feedbacks: Feedback[];
+
+  @OneToMany(() => Contribution, (contribution) => contribution.user)
+  contributions: Contribution[];
 
 }

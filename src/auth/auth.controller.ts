@@ -1,17 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor, Res, UseGuards, Req,  } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, ClassSerializerInterceptor, Res, UseGuards, Req, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-auth.dto';
 import { UpdateUserDto } from './dto/update-auth.dto';
-import { SigninDto } from './dto/signin.dto'; 
+import { SigninDto } from './dto/signin.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from './guards/auth.guard';
 import { User } from './entities/user.entity';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResetPasswordFinalDto } from './dto/reset-password-final.dto';
-import { GoogleAuthGuard } from './google-auth-guard';
+import { GoogleAuthGuard } from './guards/google-auth-guard';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
-
+import { CreateExpertDto } from '../expert/dto/create-expert.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -19,8 +19,34 @@ export class AuthController {
   constructor(private readonly authService: AuthService,
     private readonly jwtService : JwtService
   ) {}
-  
 
+  // @Get('google/login')
+  // @UseGuards(GoogleAuthGuard)
+  // async googleLogin(@Req() req) {
+  //   return req.user;
+  // }
+
+  // @Get('google/callback')
+  // @UseGuards(GoogleAuthGuard)
+  // async googleCallback(@Req() req, @Res() res: Response) {
+  //   const user = req.user;
+  //   if (!user) {
+  //     return res.status(401).send('Authentication failed');
+  //   }
+
+  //   // Generate JWT token
+  //   const payload = {
+  //     id: user.id,
+  //     email: user.email,
+  //     role: user.role
+  //   };
+
+  //   const token = this.jwtService.sign(payload);
+  //   
+  //   const returnTo = 'http://localhost:3000/admin';
+  //   
+  //   res.redirect(`${returnTo}?token=${token}`);
+  // }
 
   @Post('signup')
   @UseInterceptors(ClassSerializerInterceptor)
@@ -37,8 +63,8 @@ export class AuthController {
   @ApiBody({ type: SigninDto })  
   @ApiResponse({ status: 200, description: 'Utilisateur connecté avec succès' })
   @ApiResponse({ status: 401, description: 'Identifiants invalides' })
-  async signin(@Body() signinDto: SigninDto, @Res({ passthrough: true }) res: Response) {
-    return this.authService.signin(signinDto, res);
+  async signin(@Body() signinDto: SigninDto) {
+    return this.authService.signin(signinDto);
   }
 
 
@@ -51,12 +77,22 @@ export class AuthController {
     return this.authService.create(createUserDto);
   }
 
+  // @Post('create-expert')
+  // @UseGuards(AuthGuard)
+  // @ApiOperation({ summary: 'Créer un expert' })
+  // @ApiResponse({ status: 201, description: 'Expert créé' })
+  // @ApiResponse({ status: 409, description: 'Email déjà utilisé' })
+  // createExpert(@Body() createExpertDto: CreateExpertDto) {
+  //   return this.authService.createExpert(createExpertDto);
+  // }
+
   @Get('getAll')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Récupérer tous les utilisateurs' })
-  findAll() {
+  async findAll() {
     return this.authService.findAll();
   }
+
 
   @Get('get/:id')
   @UseGuards(AuthGuard)
@@ -66,6 +102,15 @@ export class AuthController {
     return this.authService.findOne(+id);
   }
 
+
+@Get('search')
+@UseGuards(AuthGuard)
+@ApiOperation({ summary: 'Rechercher des utilisateurs par username' })
+@ApiResponse({ status: 200, description: 'Liste des utilisateurs correspondants' })
+async searchUsers(@Query('username') username: string) {
+  return this.authService.searchUsers(username);
+}
+  
   @Patch('update/:id')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Mettre à jour un utilisateur' })
@@ -166,55 +211,14 @@ async resetPassword(@Body() resetPasswordFinalDto: ResetPasswordFinalDto) {
   };
 }
 
-//Google Auth Route
-@Get('google')
-@UseGuards(GoogleAuthGuard)
-async googleAuth() {
-  //redirects you to Google Auth Route
-}
-
-@Get('google/callback')
-@UseGuards(GoogleAuthGuard)
-async googleAuthRedirect(@Req() req, @Res() res) {
-  try {
-    
-    const user = req.user;
-
-    const payload = { 
-      email: user.email, 
-      sub: user.id,
-      name: user.name 
-    };
-
-    const jwt = this.jwtService.sign(payload);
-
-    // Set JWT as a secure, HTTP-only cookie
-    res.cookie('access_token', jwt, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // true in production (HTTPS)
-      sameSite: 'lax', // or 'strict' for more protection
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
-    });
-
-    //adhouma fil front 
-    //loula ki tsir success wel thenya fil error
-    // Redirect to the frontend (token is in cookie, not in URL)
-    res.redirect('http://localhost:3000/admin');
-  } catch (error) {
-    console.error('Auth error:', error);
-    res.redirect(`http://localhost:3000/auth-error?message=${error.message}`);
-  }
-}
-
 @Post('logout')
 async logout(@Res({ passthrough: true }) res: Response) {
-  res.clearCookie('access_token', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  });
-
+  // Clear the token cookie
+  res.clearCookie('token', { path: '/' });
+  
+  // Clear any other auth-related cookies
+  res.clearCookie('access_token', { path: '/' });
+  
   return { message: 'Logged out successfully' };
 }
 }

@@ -20,7 +20,15 @@ export class RoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || !user.role || !requiredRoles.includes(user.role)) {
+    // LOG pour debug complet
+    console.log('RoleGuard - user:', JSON.stringify(user), '| required:', requiredRoles);
+    console.log('RoleGuard - user.role:', user?.role, '| required:', requiredRoles);
+
+    // Comparaison robuste (insensible à la casse, string ou enum)
+    const userRole = (user?.role || user?.userRole || '').toString().toUpperCase();
+    const allowedRoles = requiredRoles.map(r => r.toString().toUpperCase());
+
+    if (!userRole || !allowedRoles.includes(userRole)) {
       throw new ForbiddenException('Accès refusé: rôle insuffisant');
     }
 

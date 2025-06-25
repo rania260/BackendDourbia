@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Contribution } from 'src/contribution/entities/contribution.entity';
 
 @Entity()
 export class Monument {
@@ -112,4 +113,7 @@ export class Monument {
 
   @Column({ nullable: true })
   enregistrement_audio_AR: string;
+
+  @OneToMany(() => Contribution, (contribution) => contribution.monument)
+  contributions: Contribution[];
 }
