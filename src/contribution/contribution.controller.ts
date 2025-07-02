@@ -23,7 +23,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 @ApiBearerAuth('access-token')
 @Controller('contributions')
 export class ContributionController {
-  constructor(private readonly contributionService: ContributionService) {}
+  constructor(private readonly contributionService: ContributionService) { }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('create')
@@ -67,7 +67,31 @@ export class ContributionController {
 
     return this.contributionService.create(body, userId, file);
   }
+  // contribution.controller.ts
+  @Post(':id/decision')
+  @UseGuards(AuthGuard('jwt'))
+  async makeDecision(
+    @Param('id') id: number,
+    @Body() body: { status: 'accepted' | 'rejected'; comment: string },
+    @Request() req,
+  ) {
+    if (body.status === 'rejected' && !body.comment) {
+      throw new BadRequestException('Un commentaire est obligatoire pour rejeter une contribution');
+    }
 
+    return this.contributionService.updateStatus(
+      id,
+      body.status,
+      body.comment,
+      req.user.id
+    );
+  }
+
+  @Get('pending')
+  @UseGuards(AuthGuard('jwt')) // Ajouter ce guard
+  async getPending() {
+    return this.contributionService.getPendingContributions();
+  }
   @Get('getAll')
   async getAll() {
     return this.contributionService.findAll();

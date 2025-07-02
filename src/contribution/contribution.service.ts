@@ -52,4 +52,26 @@ export class ContributionService {
     await this.contributionRepository.delete(id);
     return { message: 'Contribution supprimée' };
   }
+
+  // contribution.service.ts
+async updateStatus(id: number, status: 'accepted' | 'rejected', comment: string, decidedById: number) {
+  const contribution = await this.contributionRepository.findOne({ where: { id } });
+  if (!contribution) {
+    throw new NotFoundException('Contribution non trouvée');
+  }
+
+  contribution.status = status;
+  contribution.decisionComment = comment;
+  contribution.decidedById = decidedById;
+  contribution.decidedAt = new Date();
+
+  return this.contributionRepository.save(contribution);
+}
+
+async getPendingContributions() {
+  return this.contributionRepository.find({ 
+    where: { status: 'pending' },
+    relations: ['user', 'monument']
+  });
+}
 }
