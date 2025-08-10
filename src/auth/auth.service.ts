@@ -4,15 +4,12 @@ import { UpdateUserDto } from './dto/update-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { USERROLES } from '../utils/enum';
 import { User } from './entities/user.entity';
-import { Partner } from '../partner/partner.entity';
-import { Expert } from '../expert/entities/expert.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt'; 
 import { SigninDto } from './dto/signin.dto';
 import { EmailService } from 'src/email/email.service';
 import { VerificationService } from 'src/verification/verification.service';
-import { CreateExpertDto } from '../expert/dto/create-expert.dto';
 import { compare } from 'bcrypt';
 
 
@@ -78,11 +75,7 @@ async createUserLoggedInByGoogle(createUserDto: CreateUserDto): Promise<User> {
 
 //get all users
   async findAll(): Promise<User[]> {
-    return this.userRepository.find({
-      relations: {
-        partner: true
-      }
-    });
+    return this.userRepository.find();
   }
 
 

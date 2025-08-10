@@ -1,17 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from 'typeorm';
-import { User } from '../auth/entities/user.entity';
+import { Entity, Column, OneToMany, ChildEntity } from 'typeorm';
+
 import { Service } from 'src/service/entities/service.entity';
-
+import { User } from 'src/auth/entities/user.entity';
+@ChildEntity()
 @Entity('partners')
-export class Partner {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @OneToOne(() => User, user => user.partner, { 
-    onDelete: 'CASCADE'
-  })
-  @JoinColumn()
-  user: User;
+export class Partner extends User{
 
   @Column({ type: 'simple-array', default: [] })
   types: string[];

@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Partner } from 'src/partner/partner.entity';
 
+
 @Injectable()
 export class ServiceService {
   constructor(
@@ -16,8 +17,7 @@ export class ServiceService {
 
   async create(createServiceDto: CreateServiceDto, partnerId: string): Promise<Service> {
     const partner = await this.partnerRepository.findOne({
-      where: { user: { id: parseInt(partnerId) } },
-      relations: ['user'],
+      where: {   id: parseInt(partnerId)  }
     });
     
   

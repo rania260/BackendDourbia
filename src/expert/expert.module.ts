@@ -4,13 +4,9 @@ import { Expert } from './entities/expert.entity';
 import { ExpertController } from './expert.controller';
 import { ExpertService } from './expert.service';
 import { AuthModule } from '../auth/auth.module';
-import { User } from '../auth/entities/user.entity';
 
 @Module({
-  imports: [
-    forwardRef(() => AuthModule),
-    TypeOrmModule.forFeature([Expert, User]),
-  ],
+  imports: [forwardRef(() => AuthModule), TypeOrmModule.forFeature([Expert])],
   controllers: [ExpertController],
   providers: [ExpertService],
   exports: [ExpertService],

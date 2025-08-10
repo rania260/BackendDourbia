@@ -1,15 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ChildEntity } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
 
+@ChildEntity()
 @Entity('experts')
-export class Expert {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @OneToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn()
-  user: User;
-
+export class Expert extends User {
   @Column({ type: 'simple-array', default: [] })
   specialities: string[]; // ['archéologue', 'historien', ...]
 

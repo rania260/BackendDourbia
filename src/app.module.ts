@@ -17,10 +17,11 @@ import { ExpertModule } from './expert/expert.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ServiceModule } from './service/service.module';
 import { ContributionModule } from './contribution/contribution.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(), 
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -30,10 +31,11 @@ import { ContributionModule } from './contribution/contribution.module';
       database: 'dourbia',
       autoLoadEntities: true,
       synchronize: true,
-      logging:true,
+      logging: true,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
     }),
     AuthModule,
+    AdminModule,
     EmailModule,
     VerificationModule,
     ContactModule,

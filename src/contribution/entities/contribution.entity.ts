@@ -1,7 +1,26 @@
 // contribution.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { Monument } from 'src/monument/entities/monument.entity';
+
+export enum ContributionStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+}
+
+export enum FileType {
+  IMAGE = 'image',
+  VIDEO = 'video',
+  PDF = 'pdf',
+}
 
 @Entity()
 export class Contribution {
@@ -14,13 +33,21 @@ export class Contribution {
   @Column({ nullable: true })
   fileUrl: string;
 
-  @Column({ nullable: true, type: 'enum', enum: ['image', 'video', 'pdf'] as const })
-  fileType: 'image' | 'video' | 'pdf' | null;
+  @Column({
+    nullable: true,
+    type: 'enum',
+    enum: FileType,
+  })
+  fileType: FileType | null;
 
-  @Column({ default: 'pending', enum: ['pending', 'accepted', 'rejected'] })
-  status: 'pending' | 'accepted' | 'rejected';
+  @Column({
+    default: ContributionStatus.PENDING,
+    type: 'enum',
+    enum: ContributionStatus,
+  })
+  status: ContributionStatus;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   decisionComment: string;
 
   @Column({ nullable: true })
@@ -29,12 +56,21 @@ export class Contribution {
   @Column({ nullable: true })
   decidedAt: Date;
 
-  @ManyToOne(() => User, user => user.contributions, { eager: true })
+  @ManyToOne(() => User, (user) => user.contributions, {
+    eager: true,
+    nullable: false,
+  })
   user: User;
 
-  @ManyToOne(() => Monument, monument => monument.contributions, { eager: true })
+  @ManyToOne(() => Monument, (monument) => monument.contributions, {
+    eager: true,
+    nullable: false,
+  })
   monument: Monument;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

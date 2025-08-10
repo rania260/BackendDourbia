@@ -31,4 +31,5 @@ export class Destination {
 
   @Column({ nullable: true })
   site_web: string;
+
 }
