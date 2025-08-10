@@ -1,4 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
+import { Destination } from '../../destination/entities/destination.entity';
+import { CircuitMonument } from './circuit-monument.entity';
 
 @Entity()
 export class Circuit {
@@ -19,9 +30,9 @@ export class Circuit {
 
   @Column({ type: 'decimal', precision: 5, scale: 4, nullable: false })
   duree_heures: number;
-  
+
   @Column({ type: 'decimal', precision: 5, scale: 3, nullable: false })
-  duree_minutes: number;  
+  duree_minutes: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 6, nullable: false })
   depart_longitude_circuit: number;
@@ -34,6 +45,20 @@ export class Circuit {
 
   @Column({ nullable: true })
   video: string;
+
+  // Relation avec Destination (Many-to-One)
+  @ManyToOne(() => Destination, (destination) => destination.circuits, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'destination_id' })
+  destination: Destination;
+
+  // Relation avec Monument via CircuitMonument (One-to-Many)
+  @OneToMany(
+    () => CircuitMonument,
+    (circuitMonument) => circuitMonument.circuit,
+  )
+  circuitMonuments: CircuitMonument[];
 
   @CreateDateColumn()
   created_at: Date;

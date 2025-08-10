@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Circuit } from '../../circuit/entities/circuit.entity';
 
 @Entity()
 export class Destination {
@@ -32,4 +33,7 @@ export class Destination {
   @Column({ nullable: true })
   site_web: string;
 
+  // Relation avec Circuit (One-to-Many)
+  @OneToMany(() => Circuit, (circuit) => circuit.destination)
+  circuits: Circuit[];
 }

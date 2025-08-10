@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Contribution } from 'src/contribution/entities/contribution.entity';
+import { CircuitMonument } from '../../circuit/entities/circuit-monument.entity';
 
 @Entity()
 export class Monument {
@@ -114,6 +115,14 @@ export class Monument {
   @Column({ nullable: true })
   enregistrement_audio_AR: string;
 
+  // Relation avec Contribution (existante)
   @OneToMany(() => Contribution, (contribution) => contribution.monument)
   contributions: Contribution[];
+
+  // Relation avec Circuit via CircuitMonument (Many-to-Many)
+  @OneToMany(
+    () => CircuitMonument,
+    (circuitMonument) => circuitMonument.monument,
+  )
+  circuitMonuments: CircuitMonument[];
 }
