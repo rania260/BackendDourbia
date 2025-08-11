@@ -1,11 +1,22 @@
 import { IsOptional, IsString, IsNumber } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateMonumentDto {
   @IsString() nom_monument_FR: string;
   @IsString() nom_monument_EN: string;
   @IsString() nom_monument_AR: string;
 
-  @IsOptional() @IsNumber() priorité?: number;
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      const parsed = parseInt(value, 10);
+      return isNaN(parsed) ? undefined : parsed;
+    }
+    return value;
+  })
+  priorité?: number;
+
   @IsOptional() @IsString() latitude_monument?: string;
   @IsOptional() @IsString() longitude_monument?: string;
   @IsOptional() @IsString() statut_monument?: string;
@@ -18,7 +29,18 @@ export class CreateMonumentDto {
   @IsOptional() @IsString() description_AR?: string;
   @IsOptional() @IsString() Affect?: string;
   @IsOptional() @IsString() etat_conservation?: string;
-  @IsOptional() @IsNumber() duree_visite?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      const parsed = parseInt(value, 10);
+      return isNaN(parsed) ? undefined : parsed;
+    }
+    return value;
+  })
+  duree_visite?: number;
+
   @IsOptional() @IsString() horaire_ouverture_ete?: string;
   @IsOptional() @IsString() horaire_fermeture_ete?: string;
   @IsOptional() @IsString() horaire_ouverture_hiver?: string;
