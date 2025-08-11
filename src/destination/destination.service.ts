@@ -12,8 +12,11 @@ export class DestinationService {
     private readonly destinationRepository: Repository<Destination>,
   ) {}
 
-  async create(createDto: CreateDestinationDto): Promise<Destination> {
-    const destination = this.destinationRepository.create(createDto);
+  async create(createDto: CreateDestinationDto, image?: Express.Multer.File): Promise<Destination> {
+    const destination = this.destinationRepository.create({
+      ...createDto,
+      image: image ? image.filename : createDto.image, // Utilise le nom du fichier uploadé ou l'URL fournie
+    });
     return await this.destinationRepository.save(destination);
   }
 
