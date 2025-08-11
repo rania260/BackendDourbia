@@ -393,6 +393,14 @@ async resetPassword(newPassword: string): Promise<boolean> {
   }
 }
 
+// méthode pour mettre à jour l'avatar
+async updateAvatar(userId: number, avatarPath: string): Promise<User> {
+  const user = await this.findOne(userId);
+  
+  user.avatar = avatarPath;
+  return await this.userRepository.save(user);
+}
+
 
 
 
