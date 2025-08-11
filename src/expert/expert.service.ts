@@ -94,8 +94,8 @@ export class ExpertService {
         'expert.description',
         'expert.epochs',
       ])
-      .where('expert.username LIKE :searchTerm', { 
-        searchTerm: `%${searchTerm}%` 
+      .where('expert.username LIKE :searchTerm', {
+        searchTerm: `%${searchTerm}%`,
       })
       .getMany();
   }

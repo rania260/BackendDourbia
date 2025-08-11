@@ -4,11 +4,12 @@ import { MulterModule } from '@nestjs/platform-express';
 import { DestinationService } from './destination.service';
 import { DestinationController } from './destination.controller';
 import { Destination } from './entities/destination.entity';
+import { Circuit } from '../circuit/entities/circuit.entity';
 import { multerDestinationOptions } from './multer.config';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Destination]),
+    TypeOrmModule.forFeature([Destination, Circuit]),
     MulterModule.register(multerDestinationOptions),
   ],
   controllers: [DestinationController],

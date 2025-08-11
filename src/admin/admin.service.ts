@@ -56,8 +56,8 @@ export class AdminService {
         'admin.lastLoginAt',
         'admin.isSuperAdmin',
       ])
-      .where('admin.username LIKE :searchTerm', { 
-        searchTerm: `%${searchTerm}%` 
+      .where('admin.username LIKE :searchTerm', {
+        searchTerm: `%${searchTerm}%`,
       })
       .getMany();
   }

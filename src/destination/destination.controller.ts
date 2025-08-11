@@ -5,7 +5,9 @@ import * as path from 'path';
 import { DestinationService } from './destination.service';
 import { CreateDestinationDto } from './dto/create-destination.dto';
 import { UpdateDestinationDto } from './dto/update-destination.dto';
+import { AssignCircuitsToDestinationDto } from './dto/assign-circuits-to-destination.dto';
 import { Destination } from './entities/destination.entity';
+import { Circuit } from '../circuit/entities/circuit.entity';
 import { multerDestinationOptions } from './multer.config';
 
 @Controller('destination')
@@ -45,5 +47,18 @@ export class DestinationController {
   @Delete('delete/:id')
   remove(@Param('id') id: string): Promise<Destination | null> {
     return this.destinationService.remove(+id);
+  }
+
+  @Post('assign-circuits/:id')
+  assignCircuits(
+    @Param('id') id: string,
+    @Body() assignDto: AssignCircuitsToDestinationDto,
+  ): Promise<Destination | null> {
+    return this.destinationService.assignCircuits(+id, assignDto);
+  }
+
+  @Get('available-circuits')
+  getAvailableCircuits(): Promise<Circuit[]> {
+    return this.destinationService.getAvailableCircuits();
   }
 }
