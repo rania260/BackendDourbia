@@ -76,6 +76,30 @@ export class ExpertService {
     });
   }
 
+  async searchExperts(searchTerm: string): Promise<Expert[]> {
+    return await this.expertRepository
+      .createQueryBuilder('expert')
+      .select([
+        'expert.id',
+        'expert.username',
+        'expert.email',
+        'expert.avatar',
+        'expert.phone',
+        'expert.country',
+        'expert.region',
+        'expert.emailVerifiedAt',
+        'expert.isBanned',
+        'expert.role',
+        'expert.specialities',
+        'expert.description',
+        'expert.epochs',
+      ])
+      .where('expert.username LIKE :searchTerm', { 
+        searchTerm: `%${searchTerm}%` 
+      })
+      .getMany();
+  }
+
   async findOneExpert(id: number): Promise<Expert> {
     const expert = await this.expertRepository.findOne({
       where: { id },
@@ -149,5 +173,16 @@ export class ExpertService {
     await this.expertRepository.delete(id);
 
     return { message: 'Expert deleted successfully' };
+  }
+
+  async banExpert(id: number, isBanned: boolean): Promise<Expert> {
+    const expert = await this.expertRepository.findOne({ where: { id } });
+
+    if (!expert) {
+      throw new NotFoundException('Expert not found');
+    }
+
+    expert.isBanned = isBanned;
+    return await this.expertRepository.save(expert);
   }
 }

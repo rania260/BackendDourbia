@@ -5,6 +5,7 @@ import {
   Patch,
   Param,
   Body,
+  Query,
   ParseIntPipe,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
@@ -18,6 +19,16 @@ export class AdminController {
   @Get()
   async findAll(): Promise<Admin[]> {
     return this.adminService.findAll();
+  }
+
+  @Get('getAll')
+  async getAllAdmins(): Promise<Admin[]> {
+    return this.adminService.findAll();
+  }
+
+  @Get('search')
+  async searchAdmins(@Query('term') searchTerm: string): Promise<Admin[]> {
+    return this.adminService.searchAdmins(searchTerm);
   }
 
   @Get(':id')

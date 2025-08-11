@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Patch, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, Delete, Query, ParseIntPipe } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ExpertService } from './expert.service';
 import { CreateExpertDto } from './dto/create-expert.dto';
@@ -19,6 +19,11 @@ export class ExpertController {
     return this.expertService.findAllExperts();
   }
 
+  @Get('search')
+  searchExperts(@Query('term') searchTerm: string) {
+    return this.expertService.searchExperts(searchTerm);
+  }
+
   @Get('get/:id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.expertService.findOneExpert(id);
@@ -32,5 +37,10 @@ export class ExpertController {
   @Delete('delete/:id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.expertService.deleteExpert(id);
+  }
+
+  @Patch('ban/:id')
+  ban(@Param('id', ParseIntPipe) id: number, @Body() body: { isBanned: boolean }) {
+    return this.expertService.banExpert(id, body.isBanned);
   }
 }

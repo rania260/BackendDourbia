@@ -2,10 +2,12 @@ export class CreatePartnerDto {
   email: string;
   username: string;
   password: string;
-  country: string;
-  region: string;
+  avatar?: string;
+  phone?: string;
+  country?: string;
+  region?: string;
   types: string[];
-  description: string;
+  description?: string;
   regions: string[];
-  services: string[];
+  services?: string[];
 }

@@ -23,6 +23,8 @@ export class PartnerService {
       email,
       username,
       password,
+      avatar,
+      phone,
       country,
       region,
       types,
@@ -43,13 +45,13 @@ export class PartnerService {
       email,
       username,
       password: hashedPassword,
-      avatar: '',
-      country,
-      region,
-      phone: '',
+      avatar: avatar || '',
+      country: country || '',
+      region: region || '',
+      phone: phone || '',
       role: USERROLES.PARTNER,
-      types,
-      description,
+      types: types || [],
+      description: description || '',
       regions: regions || [],
       services: services || [],
     });
@@ -59,6 +61,15 @@ export class PartnerService {
 
   async findAllPartners(): Promise<Partner[]> {
     return await this.partnerRepository.find();
+  }
+
+  async searchPartners(searchTerm: string): Promise<Partner[]> {
+    return await this.partnerRepository
+      .createQueryBuilder('partner')
+      .where('partner.username LIKE :searchTerm', { 
+        searchTerm: `%${searchTerm}%` 
+      })
+      .getMany();
   }
 
   async updatePartner(
@@ -104,5 +115,16 @@ export class PartnerService {
     }
 
     await this.partnerRepository.delete(id);
+  }
+
+  async banPartner(id: number, isBanned: boolean): Promise<Partner> {
+    const partner = await this.partnerRepository.findOne({ where: { id } });
+
+    if (!partner) {
+      throw new NotFoundException('Partner not found');
+    }
+
+    partner.isBanned = isBanned;
+    return await this.partnerRepository.save(partner);
   }
 }

@@ -24,12 +24,42 @@ export class AdminService {
         'id',
         'email',
         'username',
+        'avatar',
         'role',
+        'phone',
+        'country',
+        'region',
+        'emailVerifiedAt',
+        'isBanned',
         'permissions',
         'lastLoginAt',
         'isSuperAdmin',
       ],
     });
+  }
+
+  async searchAdmins(searchTerm: string): Promise<Admin[]> {
+    return await this.adminRepository
+      .createQueryBuilder('admin')
+      .select([
+        'admin.id',
+        'admin.email',
+        'admin.username',
+        'admin.avatar',
+        'admin.role',
+        'admin.phone',
+        'admin.country',
+        'admin.region',
+        'admin.emailVerifiedAt',
+        'admin.isBanned',
+        'admin.permissions',
+        'admin.lastLoginAt',
+        'admin.isSuperAdmin',
+      ])
+      .where('admin.username LIKE :searchTerm', { 
+        searchTerm: `%${searchTerm}%` 
+      })
+      .getMany();
   }
 
   async findOne(id: number): Promise<Admin> {
@@ -39,7 +69,13 @@ export class AdminService {
         'id',
         'email',
         'username',
+        'avatar',
         'role',
+        'phone',
+        'country',
+        'region',
+        'emailVerifiedAt',
+        'isBanned',
         'permissions',
         'lastLoginAt',
         'isSuperAdmin',
