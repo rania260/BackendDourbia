@@ -23,8 +23,11 @@ export class CircuitService {
     private readonly destinationRepository: Repository<Destination>,
   ) {}
 
-  async create(createDto: CreateCircuitDto): Promise<Circuit> {
-    const circuit = this.circuitRepository.create(createDto);
+  async create(createDto: CreateCircuitDto, image?: Express.Multer.File): Promise<Circuit> {
+    const circuit = this.circuitRepository.create({
+      ...createDto,
+      img: image ? image.filename : createDto.img, // Utilise le nom du fichier uploadé ou l'URL fournie
+    });
     return await this.circuitRepository.save(circuit);
   }
 

@@ -7,7 +7,13 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseInterceptors,
+  UploadedFile,
+  Res,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
+import * as path from 'path';
 import { CircuitService } from './circuit.service';
 import { CreateCircuitDto } from './dto/create-circuit.dto';
 import { UpdateCircuitDto } from './dto/update-circuit.dto';
@@ -15,14 +21,19 @@ import { CreateCircuitWithMonumentsDto } from './dto/create-circuit-with-monumen
 import { UpdateMonumentOrderDto } from './dto/update-monument-order.dto';
 import { Circuit } from './entities/circuit.entity';
 import { CircuitMonument } from './entities/circuit-monument.entity';
+import { multerCircuitOptions } from './multer.config';
 
 @Controller('circuit')
 export class CircuitController {
   constructor(private readonly circuitService: CircuitService) {}
 
   @Post('create')
-  create(@Body() createDto: CreateCircuitDto): Promise<Circuit> {
-    return this.circuitService.create(createDto);
+  @UseInterceptors(FileInterceptor('image', multerCircuitOptions))
+  create(
+    @Body() createDto: CreateCircuitDto,
+    @UploadedFile() image: Express.Multer.File,
+  ): Promise<Circuit> {
+    return this.circuitService.create(createDto, image);
   }
 
   @Post('create-with-monuments')
@@ -35,6 +46,17 @@ export class CircuitController {
   @Get('getAll')
   findAll(): Promise<Circuit[]> {
     return this.circuitService.findAll();
+  }
+
+  @Get('image/:imageName')
+  getImage(@Param('imageName') imageName: string, @Res() res: Response) {
+    const imagePath = path.join(
+      process.cwd(),
+      'uploads',
+      'circuits',
+      imageName,
+    );
+    return res.sendFile(imagePath);
   }
 
   @Get('get/:id')
