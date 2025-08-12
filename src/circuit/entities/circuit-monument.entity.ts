@@ -10,7 +10,6 @@ import { Circuit } from '../../circuit/entities/circuit.entity';
 import { Monument } from '../../monument/entities/monument.entity';
 
 @Entity('circuit_monument')
-@Unique(['circuit', 'monument']) // Un monument ne peut être qu'une fois par circuit
 @Unique(['circuit', 'ordre']) // Un ordre ne peut être qu'une fois par circuit
 export class CircuitMonument {
   @PrimaryGeneratedColumn()

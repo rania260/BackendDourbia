@@ -28,7 +28,9 @@ export class MonumentService {
   }
 
   async findAll(): Promise<Monument[]> {
-    return this.monumentRepository.find();
+    return this.monumentRepository.find({
+      relations: ['circuitMonuments', 'circuitMonuments.circuit'],
+    });
   }
 
   async findOne(id: number): Promise<Monument> {

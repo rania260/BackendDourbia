@@ -75,12 +75,12 @@ export class CircuitController {
   addMonumentToCircuit(
     @Param('circuitId', ParseIntPipe) circuitId: number,
     @Param('monumentId', ParseIntPipe) monumentId: number,
-    @Body('ordre', ParseIntPipe) ordre: number,
+    @Body() body: { ordre?: number },
   ): Promise<CircuitMonument> {
     return this.circuitService.addMonumentToCircuit(
       circuitId,
       monumentId,
-      ordre,
+      body.ordre,
     );
   }
 

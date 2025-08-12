@@ -118,7 +118,7 @@ export class CircuitService {
   async addMonumentToCircuit(
     circuitId: number,
     monumentId: number,
-    ordre: number,
+    ordre?: number,
   ): Promise<CircuitMonument> {
     const circuit = await this.circuitRepository.findOneBy({ id: circuitId });
     if (!circuit) {
@@ -134,10 +134,42 @@ export class CircuitService {
       );
     }
 
+    // Si l'ordre n'est pas fourni, calculer le prochain ordre disponible
+    let finalOrdre = ordre;
+    if (!finalOrdre) {
+      const existingMonuments = await this.circuitMonumentRepository.find({
+        where: { circuit: { id: circuitId } },
+        order: { ordre: 'ASC' },
+      });
+      
+      finalOrdre = existingMonuments.length + 1;
+    } else {
+      // Si l'ordre est fourni, vérifier s'il existe déjà
+      const existingWithOrder = await this.circuitMonumentRepository.findOne({
+        where: {
+          circuit: { id: circuitId },
+          ordre: finalOrdre,
+        },
+      });
+
+      if (existingWithOrder) {
+        // Décaler tous les monuments avec un ordre >= à celui demandé
+        await this.circuitMonumentRepository
+          .createQueryBuilder()
+          .update()
+          .set({ ordre: () => 'ordre + 1' })
+          .where('circuit_id = :circuitId AND ordre >= :ordre', {
+            circuitId,
+            ordre: finalOrdre,
+          })
+          .execute();
+      }
+    }
+
     const circuitMonument = this.circuitMonumentRepository.create({
       circuit,
       monument,
-      ordre,
+      ordre: finalOrdre,
     });
 
     return await this.circuitMonumentRepository.save(circuitMonument);
