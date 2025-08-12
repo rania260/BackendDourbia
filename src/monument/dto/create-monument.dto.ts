@@ -3,8 +3,8 @@ import { Transform } from 'class-transformer';
 
 export class CreateMonumentDto {
   @IsString() nom_monument_FR: string;
-  @IsString() nom_monument_EN: string;
-  @IsString() nom_monument_AR: string;
+  @IsOptional() @IsString() nom_monument_EN?: string;
+  @IsOptional() @IsString() nom_monument_AR?: string;
 
   @IsOptional()
   @IsNumber()
@@ -15,7 +15,7 @@ export class CreateMonumentDto {
     }
     return value;
   })
-  priorité?: number;
+  priorite?: number;
 
   @IsOptional() @IsString() latitude_monument?: string;
   @IsOptional() @IsString() longitude_monument?: string;

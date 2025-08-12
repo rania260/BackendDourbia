@@ -17,7 +17,7 @@ export class Monument {
   nom_monument_AR: string;
 
   @Column({ nullable: true })
-  priorité: number;
+  priorite: number;
 
   @Column({ nullable: true })
   latitude_monument: string;

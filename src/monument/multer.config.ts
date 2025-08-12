@@ -33,3 +33,35 @@ export const imageFileFilter = (
   }
   callback(null, true);
 };
+
+// Configuration multer pour les audios de monuments
+export const monumentAudioStorage = diskStorage({
+  destination: (req, file, callback) => {
+    const uploadPath = './uploads/monuments/audio';
+    // Créer le dossier s'il n'existe pas
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    callback(null, uploadPath);
+  },
+  filename: (req, file, callback) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const fileExtension = extname(file.originalname);
+    callback(null, `audio-${uniqueSuffix}${fileExtension}`);
+  },
+});
+
+// Filtre pour accepter seulement les audios
+export const audioFileFilter = (
+  req: any,
+  file: Express.Multer.File,
+  callback: any,
+) => {
+  if (!file.mimetype.startsWith('audio/')) {
+    return callback(
+      new Error('Seuls les fichiers audio sont autorisés!'),
+      false,
+    );
+  }
+  callback(null, true);
+};

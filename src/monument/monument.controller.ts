@@ -21,7 +21,12 @@ import { MonumentService } from './monument.service';
 import { CreateMonumentDto } from './dto/create-monument.dto';
 import { UpdateMonumentDto } from './dto/update-monument.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
-import { monumentImageStorage, imageFileFilter } from './multer.config';
+import { 
+  monumentImageStorage, 
+  imageFileFilter,
+  monumentAudioStorage,
+  audioFileFilter 
+} from './multer.config';
 
 @UseGuards(AuthGuard, RoleGuard)
 @Controller('monument')
@@ -83,5 +88,30 @@ export class MonumentController {
   @Public()
   getImage(@Param('filename') filename: string, @Res() res: Response) {
     return this.monumentService.getImage(filename, res);
+  }
+
+  // Upload audio files
+  @Post('upload-audio/:id')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  @UseInterceptors(
+    FileInterceptor('audioFile', {
+      storage: monumentAudioStorage,
+      fileFilter: audioFileFilter,
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    }),
+  )
+  uploadAudio(
+    @Param('id') id: string,
+    @Body('language') language: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.monumentService.uploadAudio(+id, language, file);
+  }
+
+  // Get audio files
+  @Get('audio/:filename')
+  @Public()
+  getAudio(@Param('filename') filename: string, @Res() res: Response) {
+    return this.monumentService.getAudio(filename, res);
   }
 }

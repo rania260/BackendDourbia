@@ -67,6 +67,20 @@ export class MonumentService {
       }
     }
     
+    // Supprimer les fichiers audio associés s'ils existent
+    const audioFiles = [
+      monument.enregistrement_audio_FR,
+      monument.enregistrement_audio_EN,
+      monument.enregistrement_audio_AR,
+    ].filter(Boolean);
+    
+    audioFiles.forEach((audioFile) => {
+      const audioPath = path.join('./uploads/monuments/audio', audioFile);
+      if (fs.existsSync(audioPath)) {
+        fs.unlinkSync(audioPath);
+      }
+    });
+    
     await this.monumentRepository.remove(monument);
   }
 
@@ -78,5 +92,59 @@ export class MonumentService {
     }
     
     res.sendFile(path.resolve(imagePath));
+  }
+
+  async uploadAudio(
+    id: number,
+    language: string,
+    file: Express.Multer.File,
+  ): Promise<Monument> {
+    const monument = await this.findOne(id);
+    
+    // Définir le champ audio selon la langue
+    let currentAudioFile: string | undefined;
+    
+    if (language === 'FR') {
+      currentAudioFile = monument.enregistrement_audio_FR;
+    } else if (language === 'EN') {
+      currentAudioFile = monument.enregistrement_audio_EN;
+    } else if (language === 'AR') {
+      currentAudioFile = monument.enregistrement_audio_AR;
+    }
+    
+    // Supprimer l'ancien fichier audio s'il existe
+    if (currentAudioFile) {
+      const oldAudioPath = path.join(
+        './uploads/monuments/audio',
+        currentAudioFile,
+      );
+      if (fs.existsSync(oldAudioPath)) {
+        fs.unlinkSync(oldAudioPath);
+      }
+    }
+    
+    // Mettre à jour avec le nouveau fichier
+    const updateData: Partial<Monument> = {};
+    
+    if (language === 'FR') {
+      updateData.enregistrement_audio_FR = file.filename;
+    } else if (language === 'EN') {
+      updateData.enregistrement_audio_EN = file.filename;
+    } else if (language === 'AR') {
+      updateData.enregistrement_audio_AR = file.filename;
+    }
+    
+    await this.monumentRepository.update(id, updateData);
+    return this.findOne(id);
+  }
+
+  getAudio(filename: string, res: Response): void {
+    const audioPath = path.join('./uploads/monuments/audio', filename);
+    
+    if (!fs.existsSync(audioPath)) {
+      throw new NotFoundException('Audio file not found');
+    }
+    
+    res.sendFile(path.resolve(audioPath));
   }
 }
