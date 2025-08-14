@@ -1,11 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { Service } from './entities/service.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { USERROLES } from 'src/utils/enum';
-
 
 @Injectable()
 export class ServiceService {
@@ -35,18 +38,19 @@ export class ServiceService {
 
     return this.serviceRepository.save(service);
   }
-  
 
   async findAll(): Promise<Service[]> {
     try {
       return await this.serviceRepository.find({
         relations: ['partner'],
         order: {
-          id: 'DESC'
-        }
+          id: 'DESC',
+        },
       });
     } catch (error) {
-      throw new BadRequestException(`Failed to fetch services: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to fetch services: ${error.message}`,
+      );
     }
   }
 
@@ -56,11 +60,13 @@ export class ServiceService {
         where: { partner: { id: parseInt(partnerId) } },
         relations: ['partner'],
         order: {
-          id: 'DESC'
-        }
+          id: 'DESC',
+        },
       });
     } catch (error) {
-      throw new BadRequestException(`Failed to fetch partner services: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to fetch partner services: ${error.message}`,
+      );
     }
   }
 
@@ -77,7 +83,9 @@ export class ServiceService {
 
       return service;
     } catch (error) {
-      throw new BadRequestException(`Failed to fetch service: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to fetch service: ${error.message}`,
+      );
     }
   }
 
@@ -85,7 +93,7 @@ export class ServiceService {
     try {
       const service = await this.serviceRepository.findOne({
         where: { id },
-        relations: ['partner']
+        relations: ['partner'],
       });
 
       if (!service) {
@@ -97,20 +105,23 @@ export class ServiceService {
 
       return await this.serviceRepository.save(service);
     } catch (error) {
-      throw new BadRequestException(`Failed to update service: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to update service: ${error.message}`,
+      );
     }
   }
 
   async remove(id: string): Promise<void> {
     try {
       const result = await this.serviceRepository.delete(id);
-      
+
       if (result.affected === 0) {
         throw new NotFoundException('Service not found');
       }
     } catch (error) {
-      throw new BadRequestException(`Failed to delete service: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to delete service: ${error.message}`,
+      );
     }
   }
 }
-

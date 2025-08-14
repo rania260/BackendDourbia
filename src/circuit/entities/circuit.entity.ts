@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Destination } from '../../destination/entities/destination.entity';
 import { CircuitMonument } from './circuit-monument.entity';
+import { Pack } from '../../pack/entities/pack.entity';
 
 @Entity()
 export class Circuit {
@@ -59,6 +60,10 @@ export class Circuit {
     (circuitMonument) => circuitMonument.circuit,
   )
   circuitMonuments: CircuitMonument[];
+
+  // Relation avec Pack (One-to-Many)
+  @OneToMany(() => Pack, (pack) => pack.circuit)
+  packs: Pack[];
 
   @CreateDateColumn()
   created_at: Date;
