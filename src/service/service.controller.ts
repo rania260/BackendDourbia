@@ -26,6 +26,17 @@ export class ServiceController {
     return this.serviceService.findAll();
   }
 
+  @Get('my-services')
+  @UseGuards(AuthGuard('jwt')) 
+  @ApiBearerAuth('access-token')
+  findMyServices(@Request() req) {
+    if (!req.user) {
+      throw new UnauthorizedException('Utilisateur non authentifié');
+    }
+    const partnerId = req.user.id;
+    return this.serviceService.findByPartnerId(partnerId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.serviceService.findOne(id);

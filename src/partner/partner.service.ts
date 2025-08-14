@@ -60,14 +60,31 @@ export class PartnerService {
   }
 
   async findAllPartners(): Promise<Partner[]> {
-    return await this.partnerRepository.find();
+    return await this.partnerRepository.find({
+      relations: ['servicesList'],
+      order: { id: 'DESC' },
+    });
+  }
+
+  async findPartnerWithServices(id: number): Promise<Partner> {
+    const partner = await this.partnerRepository.findOne({
+      where: { id },
+      relations: ['servicesList'],
+    });
+
+    if (!partner) {
+      throw new NotFoundException('Partner not found');
+    }
+
+    return partner;
   }
 
   async searchPartners(searchTerm: string): Promise<Partner[]> {
     return await this.partnerRepository
       .createQueryBuilder('partner')
-      .where('partner.username LIKE :searchTerm', { 
-        searchTerm: `%${searchTerm}%` 
+      .leftJoinAndSelect('partner.servicesList', 'services')
+      .where('partner.username LIKE :searchTerm', {
+        searchTerm: `%${searchTerm}%`,
       })
       .getMany();
   }

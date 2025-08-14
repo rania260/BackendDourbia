@@ -17,7 +17,7 @@ export class Partner extends User{
 
   @Column({ type: 'simple-array', default: [] })
   services: string[];
-  
+
   @OneToMany(() => Service, (service) => service.partner, { cascade: true })
   servicesList: Service[];
 }

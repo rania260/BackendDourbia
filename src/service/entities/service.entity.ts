@@ -1,4 +1,4 @@
-import { Partner } from 'src/partner/partner.entity';
+import { User } from 'src/auth/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,6 +6,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -37,9 +38,10 @@ export class Service {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Partner, (partner) => partner.servicesList, {
+  @ManyToOne(() => User, {
     onDelete: 'CASCADE',
     nullable: false,
   })
-  partner: Partner;
+  @JoinColumn({ name: 'partnerId' })
+  partner: User;
 }

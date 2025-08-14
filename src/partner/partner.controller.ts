@@ -34,6 +34,11 @@ export class PartnerController {
     return this.partnerService.searchPartners(searchTerm);
   }
 
+  @Get(':id')
+  findPartnerWithServices(@Param('id', ParseIntPipe) id: number) {
+    return this.partnerService.findPartnerWithServices(id);
+  }
+
   @Patch('update/:id')
   update(
     @Param('id', ParseIntPipe) id: number,

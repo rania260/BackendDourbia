@@ -3,7 +3,8 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { Service } from './entities/service.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Partner } from 'src/partner/partner.entity';
+import { User } from 'src/auth/entities/user.entity';
+import { USERROLES } from 'src/utils/enum';
 
 
 @Injectable()
@@ -11,25 +12,27 @@ export class ServiceService {
   constructor(
     @InjectRepository(Service)
     private serviceRepository: Repository<Service>,
-    @InjectRepository(Partner)
-    private partnerRepository: Repository<Partner>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
-  async create(createServiceDto: CreateServiceDto, partnerId: string): Promise<Service> {
-    const partner = await this.partnerRepository.findOne({
-      where: {   id: parseInt(partnerId)  }
+  async create(
+    createServiceDto: CreateServiceDto,
+    partnerId: number,
+  ): Promise<Service> {
+    const partner = await this.userRepository.findOne({
+      where: { id: partnerId, role: USERROLES.PARTNER },
     });
-    
-  
+
     if (!partner) {
       throw new NotFoundException('Partenaire non trouvé');
     }
-  
+
     const service = this.serviceRepository.create({
       ...createServiceDto,
       partner,
     });
-  
+
     return this.serviceRepository.save(service);
   }
   
@@ -44,6 +47,20 @@ export class ServiceService {
       });
     } catch (error) {
       throw new BadRequestException(`Failed to fetch services: ${error.message}`);
+    }
+  }
+
+  async findByPartnerId(partnerId: string): Promise<Service[]> {
+    try {
+      return await this.serviceRepository.find({
+        where: { partner: { id: parseInt(partnerId) } },
+        relations: ['partner'],
+        order: {
+          id: 'DESC'
+        }
+      });
+    } catch (error) {
+      throw new BadRequestException(`Failed to fetch partner services: ${error.message}`);
     }
   }
 
@@ -73,18 +90,6 @@ export class ServiceService {
 
       if (!service) {
         throw new NotFoundException('Service not found');
-      }
-
-      // Update partner if provided
-      if (updateDto.partnerId) {
-        const partner = await this.partnerRepository.findOne({
-          where: { id: parseInt(updateDto.partnerId) }
-        });
-
-        if (!partner) {
-          throw new NotFoundException('Partner not found');
-        }
-        service.partner = partner;
       }
 
       // Update other fields

@@ -18,6 +18,7 @@ import { FeedbackModule } from './feedback/feedback.module';
 import { ServiceModule } from './service/service.module';
 import { ContributionModule } from './contribution/contribution.module';
 import { AdminModule } from './admin/admin.module';
+import { PackModule } from './pack/pack.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { AdminModule } from './admin/admin.module';
     FeedbackModule,
     ServiceModule,
     ContributionModule,
+    PackModule,
   ],
   controllers: [AppController],
   providers: [AppService],
