@@ -4,5 +4,6 @@ export class CreateServiceDto {
   description?: string;
   regions: string[];
   prix: number;
+  requiresReservation?: boolean;
 }
   

@@ -160,6 +160,7 @@ export class PackService implements OnModuleInit {
       typePaiement,
       methodePaiement,
       idCommande,
+      isPaid: typePaiement === 'en ligne', // Automatiquement payé si en ligne
     });
 
     const savedPurchase = await this.purchaseRepository.save(purchase);
@@ -265,6 +266,68 @@ export class PackService implements OnModuleInit {
         </ul>
         <p>À bientôt sur notre plateforme 🌍</p>
       `,
+    });
+  }
+
+  // ============= GESTION DES PAIEMENTS =============
+
+  async updatePaymentStatus(
+    purchaseId: number,
+    isPaid: boolean,
+  ): Promise<PackPurchase> {
+    const purchase = await this.purchaseRepository.findOne({
+      where: { id: purchaseId },
+      relations: ['user', 'pack'],
+    });
+
+    if (!purchase) {
+      throw new NotFoundException('Achat de pack introuvable');
+    }
+
+    purchase.isPaid = isPaid;
+    const updatedPurchase = await this.purchaseRepository.save(purchase);
+
+    // Envoyer une notification à l'utilisateur si le paiement est confirmé
+    if (isPaid) {
+      await this.emailService.sendEmail({
+        subject: 'Paiement confirmé - Dourbia',
+        recipients: [{ address: purchase.user.email }],
+        html: `
+          <h2>Bonjour ${purchase.user.username},</h2>
+          <p>Votre paiement pour la commande <strong>${purchase.numeroCommande}</strong> a été confirmé.</p>
+          <p><strong>Pack :</strong> ${purchase.pack.nom}</p>
+          <p><strong>Montant :</strong> ${purchase.prixTotal} DT</p>
+          <p>Vous pouvez maintenant effectuer vos réservations de services.</p>
+          <p>Merci de votre confiance ! 🌍</p>
+        `,
+      });
+
+      // TODO: Implémenter la notification WebSocket
+      // this.notificationGateway.sendNotificationToUser(purchase.user.id, {
+      //   type: 'payment_confirmed',
+      //   message: `Votre paiement pour le pack "${purchase.pack.nom}" a été confirmé.`,
+      //   data: { purchaseId: purchase.id, packName: purchase.pack.nom },
+      // });
+    }
+
+    return updatedPurchase;
+  }
+
+  async getUnpaidPurchases(): Promise<PackPurchase[]> {
+    return this.purchaseRepository.find({
+      where: {
+        typePaiement: 'sur place',
+        isPaid: false,
+      },
+      relations: ['user', 'pack'],
+      order: { dateAchat: 'DESC' },
+    });
+  }
+
+  async getAllPurchases(): Promise<PackPurchase[]> {
+    return this.purchaseRepository.find({
+      relations: ['user', 'pack'],
+      order: { dateAchat: 'DESC' },
     });
   }
 }

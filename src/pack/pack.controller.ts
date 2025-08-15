@@ -17,6 +17,7 @@ import { CreatePackDto } from './dto/create-pack.dto';
 import { UpdatePackDto } from './dto/update-pack.dto';
 import { PurchasePackDto } from './dto/purchase-pack.dto';
 import { StripePaymentDto } from './dto/stripe-payment.dto';
+import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
 
 @Controller('pack')
 export class PackController {
@@ -92,5 +93,28 @@ export class PackController {
       console.error('Erreur Webhook Stripe :', err.message);
       res.status(400).send(`Webhook Error: ${err.message}`);
     }
+  }
+
+  // ============= GESTION DES PAIEMENTS =============
+
+  @Patch('purchase/:id/payment-status')
+  updatePaymentStatus(
+    @Param('id') id: string,
+    @Body() updatePaymentStatusDto: UpdatePaymentStatusDto,
+  ) {
+    return this.packService.updatePaymentStatus(
+      +id,
+      updatePaymentStatusDto.isPaid,
+    );
+  }
+
+  @Get('purchases/unpaid')
+  getUnpaidPurchases() {
+    return this.packService.getUnpaidPurchases();
+  }
+
+  @Get('purchases/all')
+  getAllPurchases() {
+    return this.packService.getAllPurchases();
   }
 }

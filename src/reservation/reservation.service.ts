@@ -85,6 +85,13 @@ export class ReservationService {
         'Le service sélectionné ne fait pas partie du pack acheté.',
       );
 
+    // Vérifier si le service nécessite une réservation
+    if (!selectedService.requiresReservation) {
+      throw new BadRequestException(
+        "Ce service ne nécessite pas de réservation. Il est directement accessible après l'achat du pack.",
+      );
+    }
+
     const totalReserved = await this.getTotalReservedByServiceAndPurchase(
       purchase.id,
       selectedService.id,

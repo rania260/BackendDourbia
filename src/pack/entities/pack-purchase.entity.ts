@@ -40,6 +40,9 @@ export class PackPurchase {
   })
   typePaiement: 'en ligne' | 'sur place';
 
+  @Column({ default: false })
+  isPaid: boolean;
+
   @Column({ type: 'enum', enum: ['stripe', 'flouci'], nullable: true })
   methodePaiement?: 'stripe' | 'flouci';
 

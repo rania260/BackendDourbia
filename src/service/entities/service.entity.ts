@@ -32,6 +32,9 @@ export class Service {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: true })
+  requiresReservation: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
