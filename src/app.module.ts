@@ -19,6 +19,7 @@ import { ServiceModule } from './service/service.module';
 import { ContributionModule } from './contribution/contribution.module';
 import { AdminModule } from './admin/admin.module';
 import { PackModule } from './pack/pack.module';
+import { ReservationModule } from './reservation/reservation.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { PackModule } from './pack/pack.module';
     ServiceModule,
     ContributionModule,
     PackModule,
+    ReservationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,12 +4,14 @@ import {
   Column,
   ManyToOne,
   ManyToMany,
+  OneToMany,
   JoinTable,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Circuit } from '../../circuit/entities/circuit.entity';
 import { Service } from '../../service/entities/service.entity';
+import { PackPurchase } from './pack-purchase.entity';
 
 @Entity()
 export class Pack {
@@ -35,6 +37,9 @@ export class Pack {
     inverseJoinColumn: { name: 'service_id', referencedColumnName: 'id' },
   })
   services: Service[];
+
+  @OneToMany(() => PackPurchase, (purchase) => purchase.pack)
+  purchases: PackPurchase[];
 
   @CreateDateColumn()
   createdAt: Date;

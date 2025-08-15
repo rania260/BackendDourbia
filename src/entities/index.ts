@@ -17,6 +17,9 @@ export { Feedback } from '../feedback/entities/feedback.entity';
 export { Contact } from '../contact/entities/contact.entity';
 export { Service } from '../service/entities/service.entity';
 export { Verification } from '../verification/entities/verification.entity';
+export { Pack } from '../pack/entities/pack.entity';
+export { PackPurchase } from '../pack/entities/pack-purchase.entity';
+export { Reservation } from '../reservation/reservation.entity';
 
 // Enums
 export { USERROLES } from '../utils/enum';

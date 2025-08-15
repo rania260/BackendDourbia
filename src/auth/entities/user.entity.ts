@@ -9,6 +9,7 @@ import {
 import { USERROLES } from '../../utils/enum';
 import { Feedback } from 'src/feedback/entities/feedback.entity';
 import { Contribution } from 'src/contribution/entities/contribution.entity';
+import { PackPurchase } from 'src/pack/entities/pack-purchase.entity';
 
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
@@ -59,4 +60,7 @@ export class User {
 
   @OneToMany(() => Contribution, (contribution) => contribution.user)
   contributions: Contribution[];
+
+  @OneToMany(() => PackPurchase, (purchase) => purchase.user)
+  packPurchases: PackPurchase[];
 }
