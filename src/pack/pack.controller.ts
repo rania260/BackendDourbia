@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   Res,
+  BadRequestException,
   Headers,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -35,24 +36,40 @@ export class PackController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.packService.findOne(+id);
+    const packId = +id;
+    if (isNaN(packId)) {
+      throw new BadRequestException('ID de pack invalide');
+    }
+    return this.packService.findOne(packId);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePackDto: UpdatePackDto) {
-    return this.packService.update(+id, updatePackDto);
+    const packId = +id;
+    if (isNaN(packId)) {
+      throw new BadRequestException('ID de pack invalide');
+    }
+    return this.packService.update(packId, updatePackDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.packService.remove(+id);
+    const packId = +id;
+    if (isNaN(packId)) {
+      throw new BadRequestException('ID de pack invalide');
+    }
+    return this.packService.remove(packId);
   }
 
   // ============= NOUVEAUX ENDPOINTS D'ACHAT =============
 
   @Get('user/:userId')
   findByUser(@Param('userId') userId: string) {
-    return this.packService.findByUserId(+userId);
+    const userIdNum = +userId;
+    if (isNaN(userIdNum)) {
+      throw new BadRequestException('ID utilisateur invalide');
+    }
+    return this.packService.findByUserId(userIdNum);
   }
 
   @Post('purchase')

@@ -32,7 +32,16 @@ export class ReservationService {
   ) {}
 
   async findAll() {
-    return this.reservationRepo.find();
+    return this.reservationRepo.find({
+      relations: [
+        'user', 
+        'service', 
+        'service.partner', 
+        'packPurchase', 
+        'packPurchase.pack'
+      ],
+      order: { id: 'DESC' },
+    });
   }
 
   async findByUserId(userId: number) {
