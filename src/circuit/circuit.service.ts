@@ -9,6 +9,8 @@ import { CreateCircuitDto } from './dto/create-circuit.dto';
 import { UpdateCircuitDto } from './dto/update-circuit.dto';
 import { CreateCircuitWithMonumentsDto } from './dto/create-circuit-with-monuments.dto';
 import { UpdateMonumentOrderDto } from './dto/update-monument-order.dto';
+import { PhotoService } from '../photo/Photo.Service';
+import { AudioService } from '../audio/audio.service';
 
 @Injectable()
 export class CircuitService {
@@ -21,6 +23,8 @@ export class CircuitService {
     private readonly monumentRepository: Repository<Monument>,
     @InjectRepository(Destination)
     private readonly destinationRepository: Repository<Destination>,
+    private photoService: PhotoService,
+    private audioService: AudioService,
   ) {}
 
   async create(createDto: CreateCircuitDto, image?: Express.Multer.File): Promise<Circuit> {
@@ -225,5 +229,91 @@ export class CircuitService {
     const circuit = await this.findOne(id);
     if (!circuit) return null;
     return await this.circuitRepository.remove(circuit);
+  }
+
+  // =============== GESTION DES PHOTOS CLOUDINARY ===============
+
+  async addPhoto(circuitId: number, file: Express.Multer.File): Promise<any> {
+    try {
+      // Vérifier que le circuit existe
+      await this.findOne(circuitId);
+
+      // Pour l'instant, utiliser l'URL locale au lieu de Cloudinary
+      const imageUrl = `/uploads/circuits/${file.filename}`;
+      
+      // Enregistrer dans la base de données via le PhotoService
+      const photo = await this.photoService.addPhoto('circuit', circuitId, imageUrl);
+      
+      return photo;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getPhotos(circuitId: number): Promise<any[]> {
+    try {
+      return await this.photoService.getPhotos('circuit', circuitId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deletePhoto(photoId: number): Promise<void> {
+    try {
+      // Récupérer les infos de la photo pour supprimer de Cloudinary
+      const photo = await this.photoService.getPhotoById(photoId);
+      if (photo) {
+        // TODO: Supprimer de Cloudinary
+        // await this.cloudinaryService.deleteImage(photo.publicId);
+      }
+
+      // Supprimer de la base de données
+      await this.photoService.deletePhoto(photoId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // =============== GESTION DES AUDIOS CLOUDINARY ===============
+
+  async addAudio(circuitId: number, file: Express.Multer.File): Promise<any> {
+    try {
+      // Vérifier que le circuit existe
+      await this.findOne(circuitId);
+
+      // Pour l'instant, utiliser l'URL locale au lieu de Cloudinary
+      const audioUrl = `/uploads/circuits/${file.filename}`;
+      
+      // Enregistrer dans la base de données via l'AudioService
+      const audio = await this.audioService.addAudio('circuit', circuitId, audioUrl);
+      
+      return audio;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getAudios(circuitId: number): Promise<any[]> {
+    try {
+      return await this.audioService.getAudios('circuit', circuitId);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteAudio(audioId: number): Promise<void> {
+    try {
+      // Récupérer les infos de l'audio pour supprimer de Cloudinary
+      const audio = await this.audioService.getAudioById(audioId);
+      if (audio) {
+        // TODO: Supprimer de Cloudinary
+        // await this.cloudinaryService.deleteAudio(audio.publicId);
+      }
+
+      // Supprimer de la base de données
+      await this.audioService.deleteAudio(audioId);
+    } catch (error) {
+      throw error;
+    }
   }
 }

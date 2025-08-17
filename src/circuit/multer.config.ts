@@ -14,12 +14,14 @@ export const multerCircuitOptions: MulterOptions = {
     },
   }),
   fileFilter: (req, file, callback) => {
-    if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-      return callback(new Error('Seules les images sont autorisées!'), false);
+    // Accepter les images et les audios
+    if (file.mimetype.match(/\/(jpg|jpeg|png|gif|webp|mp3|wav|ogg|m4a|aac)$/)) {
+      callback(null, true);
+    } else {
+      return callback(new Error('Seules les images et audios sont autorisés!'), false);
     }
-    callback(null, true);
   },
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 10 * 1024 * 1024, // 10MB pour permettre les fichiers audio
   },
 };

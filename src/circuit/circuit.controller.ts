@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -22,7 +23,13 @@ import { UpdateMonumentOrderDto } from './dto/update-monument-order.dto';
 import { Circuit } from './entities/circuit.entity';
 import { CircuitMonument } from './entities/circuit-monument.entity';
 import { multerCircuitOptions } from './multer.config';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RoleGuard } from '../auth/guards/role.guard';
+import { Roles } from '../auth/guards/roles.decorator';
+import { Public } from '../auth/guards/public.decorator';
+import { USERROLES } from '../utils/enum';
 
+@UseGuards(AuthGuard, RoleGuard)
 @Controller('circuit')
 export class CircuitController {
   constructor(private readonly circuitService: CircuitService) {}
@@ -44,6 +51,7 @@ export class CircuitController {
   }
 
   @Get('getAll')
+  @Public()
   findAll(): Promise<Circuit[]> {
     return this.circuitService.findAll();
   }
@@ -57,6 +65,54 @@ export class CircuitController {
       imageName,
     );
     return res.sendFile(imagePath);
+  }
+
+  // =============== ENDPOINTS DE GESTION DES PHOTOS CLOUDINARY ===============
+
+  @Get(':id/photos')
+  @Public()
+  async getPhotos(@Param('id') circuitId: string) {
+    return this.circuitService.getPhotos(+circuitId);
+  }
+
+  @Post(':id/photos')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  @UseInterceptors(FileInterceptor('photo', multerCircuitOptions))
+  async addPhoto(
+    @Param('id') circuitId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.circuitService.addPhoto(+circuitId, file);
+  }
+
+  @Delete('photos/:photoId')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  async deletePhoto(@Param('photoId') photoId: string) {
+    return this.circuitService.deletePhoto(+photoId);
+  }
+
+  // =============== ENDPOINTS DE GESTION DES AUDIOS CLOUDINARY ===============
+
+  @Get(':id/audios')
+  @Public()
+  async getAudios(@Param('id') circuitId: string) {
+    return this.circuitService.getAudios(+circuitId);
+  }
+
+  @Post(':id/audios')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  @UseInterceptors(FileInterceptor('audio', multerCircuitOptions))
+  async addAudio(
+    @Param('id') circuitId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.circuitService.addAudio(+circuitId, file);
+  }
+
+  @Delete('audios/:audioId')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  async deleteAudio(@Param('audioId') audioId: string) {
+    return this.circuitService.deleteAudio(+audioId);
   }
 
   @Get('get/:id')
