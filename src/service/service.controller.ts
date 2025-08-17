@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, UnauthorizedException, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from './multer.config';
 
 @Controller('services')
 export class ServiceController {
@@ -50,5 +52,30 @@ export class ServiceController {
   @Delete('delete/:id')
   remove(@Param('id') id: string) {
     return this.serviceService.remove(id);
+  }
+
+  // =============== ENDPOINTS DE GESTION DES PHOTOS ===============
+
+  @Post(':id/photos')
+  @UseInterceptors(FileInterceptor('photo', multerConfig))
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  async addPhoto(
+    @Param('id') serviceId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.serviceService.addPhoto(serviceId, file);
+  }
+
+  @Get(':id/photos')
+  async getPhotos(@Param('id') serviceId: string) {
+    return this.serviceService.getPhotos(serviceId);
+  }
+
+  @Delete('photos/:photoId')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  async deletePhoto(@Param('photoId') photoId: string) {
+    return this.serviceService.deletePhoto(+photoId);
   }
 }

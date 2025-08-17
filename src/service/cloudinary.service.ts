@@ -13,7 +13,7 @@ export class CloudinaryService {
 
   async uploadImage(
     file: Express.Multer.File,
-    folder: string = 'destinations',
+    folder: string = 'services',
   ): Promise<string> {
     try {
       const result = await cloudinary.uploader.upload(file.path, {
@@ -33,7 +33,7 @@ export class CloudinaryService {
 
   async uploadMultipleImages(
     files: Express.Multer.File[],
-    folder: string = 'destinations',
+    folder: string = 'services',
   ): Promise<string[]> {
     const uploadPromises = files.map(file => 
       this.uploadImage(file, folder)
