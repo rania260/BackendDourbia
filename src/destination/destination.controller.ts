@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UploadedFiles, Res } from '@nestjs/common';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import * as path from 'path';
 import { DestinationService } from './destination.service';
@@ -8,11 +8,15 @@ import { UpdateDestinationDto } from './dto/update-destination.dto';
 import { AssignCircuitsToDestinationDto } from './dto/assign-circuits-to-destination.dto';
 import { Destination } from './entities/destination.entity';
 import { Circuit } from '../circuit/entities/circuit.entity';
+import { CloudinaryService } from './cloudinary.service';
 import { multerDestinationOptions } from './multer.config';
 
 @Controller('destination')
 export class DestinationController {
-  constructor(private readonly destinationService: DestinationService) {}
+  constructor(
+    private readonly destinationService: DestinationService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   @Post('create')
   @UseInterceptors(FileInterceptor('image', multerDestinationOptions))
@@ -60,5 +64,55 @@ export class DestinationController {
   @Get('available-circuits')
   getAvailableCircuits(): Promise<Circuit[]> {
     return this.destinationService.getAvailableCircuits();
+  }
+
+  // === NOUVEAUX ENDPOINTS POUR LES PHOTOS ===
+
+  @Post(':id/photos/upload')
+  @UseInterceptors(FilesInterceptor('photos', 10, multerDestinationOptions))
+  async uploadPhotos(
+    @Param('id') id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    try {
+      const destinationId = +id;
+      const uploadedUrls = await this.cloudinaryService.uploadMultipleImages(
+        files,
+        'destinations',
+      );
+
+      // Sauvegarder chaque URL dans la base de données
+      const savedPhotos: any[] = [];
+      for (const url of uploadedUrls) {
+        const photo = await this.destinationService.addPhoto(
+          destinationId,
+          url,
+        );
+        savedPhotos.push(photo);
+      }
+
+      return {
+        message: `${files.length} photos uploadées avec succès`,
+        photos: savedPhotos,
+      };
+    } catch (error: any) {
+      throw new Error(`Erreur upload photos: ${error.message}`);
+    }
+  }
+
+  @Get(':id/photos')
+  async getPhotos(@Param('id') id: string) {
+    return this.destinationService.getPhotos(+id);
+  }
+
+  @Delete('photos/:photoId')
+  async deletePhoto(@Param('photoId') photoId: string) {
+    try {
+      await this.destinationService.deletePhoto(+photoId);
+      
+      return { message: 'Photo supprimée avec succès' };
+    } catch (error: any) {
+      throw new Error(`Erreur suppression photo: ${error?.message || 'Erreur inconnue'}`);
+    }
   }
 }

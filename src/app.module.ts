@@ -20,6 +20,8 @@ import { ContributionModule } from './contribution/contribution.module';
 import { AdminModule } from './admin/admin.module';
 import { PackModule } from './pack/pack.module';
 import { ReservationModule } from './reservation/reservation.module';
+import { PhotoModule } from './photo/photo.module';
+import { AudioModule } from './audio/audio.module';
 
 @Module({
   imports: [
@@ -53,6 +55,8 @@ import { ReservationModule } from './reservation/reservation.module';
     ContributionModule,
     PackModule,
     ReservationModule,
+    PhotoModule, // Module pour gérer les photos
+    AudioModule, // Module pour gérer les audios
   ],
   controllers: [AppController],
   providers: [AppService],

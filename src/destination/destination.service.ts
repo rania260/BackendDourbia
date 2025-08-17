@@ -6,6 +6,7 @@ import { UpdateDestinationDto } from './dto/update-destination.dto';
 import { AssignCircuitsToDestinationDto } from './dto/assign-circuits-to-destination.dto';
 import { Destination } from './entities/destination.entity';
 import { Circuit } from '../circuit/entities/circuit.entity';
+import { PhotoService } from '../photo/Photo.Service';
 
 @Injectable()
 export class DestinationService {
@@ -14,6 +15,7 @@ export class DestinationService {
     private readonly destinationRepository: Repository<Destination>,
     @InjectRepository(Circuit)
     private readonly circuitRepository: Repository<Circuit>,
+    private readonly photoService: PhotoService, // Injection PhotoService
   ) {}
 
   async create(createDto: CreateDestinationDto, image?: Express.Multer.File): Promise<Destination> {
@@ -25,16 +27,30 @@ export class DestinationService {
   }
 
   async findAll(): Promise<Destination[]> {
-    return await this.destinationRepository.find({
+    const destinations = await this.destinationRepository.find({
       relations: ['circuits'],
     });
+    
+    // Ajouter les photos pour chaque destination
+    for (const destination of destinations) {
+      destination['photos'] = await this.photoService.getPhotos('destination', destination.id);
+    }
+    
+    return destinations;
   }
 
   async findOne(id: number): Promise<Destination | null> {
-    return await this.destinationRepository.findOne({
+    const destination = await this.destinationRepository.findOne({
       where: { id },
       relations: ['circuits'],
     });
+    
+    if (destination) {
+      // Ajouter les photos
+      destination['photos'] = await this.photoService.getPhotos('destination', destination.id);
+    }
+    
+    return destination;
   }
 
   async update(id: number, updateDto: UpdateDestinationDto): Promise<Destination | null> {
@@ -81,5 +97,23 @@ export class DestinationService {
     return await this.circuitRepository.find({
       relations: ['destination'],
     });
+  }
+
+  // === NOUVELLES MÉTHODES POUR GÉRER LES PHOTOS ===
+  
+  async addPhoto(destinationId: number, photoUrl: string): Promise<any> {
+    return await this.photoService.addPhoto('destination', destinationId, photoUrl);
+  }
+
+  async getPhotos(destinationId: number): Promise<any[]> {
+    return await this.photoService.getPhotos('destination', destinationId);
+  }
+
+  async deletePhoto(photoId: number): Promise<void> {
+    return await this.photoService.deletePhoto(photoId);
+  }
+
+  async deleteAllPhotos(destinationId: number): Promise<void> {
+    return await this.photoService.deletePhotosByEntity('destination', destinationId);
   }
 }
