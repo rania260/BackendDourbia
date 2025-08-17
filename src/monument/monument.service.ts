@@ -1,5 +1,5 @@
 // src/monument/monument.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Response } from 'express';
@@ -8,12 +8,18 @@ import * as fs from 'fs';
 import { Monument } from './entities/monument.entity';
 import { CreateMonumentDto } from './dto/create-monument.dto';
 import { UpdateMonumentDto } from './dto/update-monument.dto';
+import { PhotoService } from '../photo/Photo.Service';
+import { AudioService } from '../audio/audio.service';
+import { CloudinaryService } from './cloudinary.service';
 
 @Injectable()
 export class MonumentService {
   constructor(
     @InjectRepository(Monument)
     private monumentRepository: Repository<Monument>,
+    private photoService: PhotoService,
+    private audioService: AudioService,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   async create(createDto: CreateMonumentDto, file?: Express.Multer.File): Promise<Monument> {
@@ -148,5 +154,117 @@ export class MonumentService {
     }
     
     res.sendFile(path.resolve(audioPath));
+  }
+
+  // =============== MÉTHODES DE GESTION DES PHOTOS ===============
+
+  async addPhoto(monumentId: number, file: Express.Multer.File): Promise<any> {
+    try {
+      // Vérifier que le monument existe
+      const monument = await this.monumentRepository.findOne({
+        where: { id: monumentId },
+      });
+
+      if (!monument) {
+        throw new NotFoundException('Monument not found');
+      }
+
+      // Upload vers Cloudinary
+      const imageUrl = await this.cloudinaryService.uploadImage(
+        file,
+        'monuments',
+      );
+
+      // Sauvegarder dans la base de données
+      const photo = await this.photoService.addPhoto('monument', monumentId, imageUrl);
+
+      return photo;
+    } catch (error) {
+      throw new BadRequestException(`Failed to add photo: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  }
+
+  async getPhotos(monumentId: number): Promise<any[]> {
+    try {
+      return await this.photoService.getPhotos('monument', monumentId);
+    } catch (error) {
+      throw new BadRequestException(`Failed to get photos: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  }
+
+  async deletePhoto(photoId: number): Promise<void> {
+    try {
+      // Récupérer la photo pour obtenir l'URL
+      const photo = await this.photoService.getPhotoById(photoId);
+      
+      if (!photo) {
+        throw new NotFoundException('Photo not found');
+      }
+
+      // Supprimer de Cloudinary
+      const publicId = this.cloudinaryService.extractPublicId(photo.url);
+      await this.cloudinaryService.deleteImage(publicId);
+
+      // Supprimer de la base de données
+      await this.photoService.deletePhoto(photoId);
+    } catch (error) {
+      throw new BadRequestException(`Failed to delete photo: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  }
+
+  // =============== MÉTHODES DE GESTION DES AUDIOS ===============
+
+  async addAudio(monumentId: number, file: Express.Multer.File, language: string): Promise<any> {
+    try {
+      // Vérifier que le monument existe
+      const monument = await this.monumentRepository.findOne({
+        where: { id: monumentId },
+      });
+
+      if (!monument) {
+        throw new NotFoundException('Monument not found');
+      }
+
+      // Upload vers Cloudinary
+      const audioUrl = await this.cloudinaryService.uploadAudio(
+        file,
+        `monuments/audio/${language}`,
+      );
+
+      // Sauvegarder dans la base de données
+      const audio = await this.audioService.addAudio('monument', monumentId, audioUrl);
+
+      return audio;
+    } catch (error) {
+      throw new BadRequestException(`Failed to add audio: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  }
+
+  async getAudios(monumentId: number): Promise<any[]> {
+    try {
+      return await this.audioService.getAudios('monument', monumentId);
+    } catch (error) {
+      throw new BadRequestException(`Failed to get audios: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  }
+
+  async deleteAudio(audioId: number): Promise<void> {
+    try {
+      // Récupérer l'audio pour obtenir l'URL
+      const audio = await this.audioService.getAudioById(audioId);
+      
+      if (!audio) {
+        throw new NotFoundException('Audio not found');
+      }
+
+      // Supprimer de Cloudinary
+      const publicId = this.cloudinaryService.extractPublicId(audio.url);
+      await this.cloudinaryService.deleteImage(publicId);
+
+      // Supprimer de la base de données
+      await this.audioService.deleteAudio(audioId);
+    } catch (error) {
+      throw new BadRequestException(`Failed to delete audio: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
   }
 }

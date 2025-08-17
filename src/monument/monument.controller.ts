@@ -114,4 +114,65 @@ export class MonumentController {
   getAudio(@Param('filename') filename: string, @Res() res: Response) {
     return this.monumentService.getAudio(filename, res);
   }
+
+  // =============== ENDPOINTS DE GESTION DES PHOTOS CLOUDINARY ===============
+
+  @Post(':id/photos')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  @UseInterceptors(
+    FileInterceptor('photo', {
+      storage: monumentImageStorage,
+      fileFilter: imageFileFilter,
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    }),
+  )
+  async addPhoto(
+    @Param('id') monumentId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.monumentService.addPhoto(+monumentId, file);
+  }
+
+  @Get(':id/photos')
+  @Public()
+  async getPhotos(@Param('id') monumentId: string) {
+    return this.monumentService.getPhotos(+monumentId);
+  }
+
+  @Delete('photos/:photoId')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  async deletePhoto(@Param('photoId') photoId: string) {
+    return this.monumentService.deletePhoto(+photoId);
+  }
+
+  // =============== ENDPOINTS DE GESTION DES AUDIOS CLOUDINARY ===============
+
+  @Post(':id/audios')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  @UseInterceptors(
+    FileInterceptor('audio', {
+      storage: monumentAudioStorage,
+      fileFilter: audioFileFilter,
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    }),
+  )
+  async addAudio(
+    @Param('id') monumentId: string,
+    @Body('language') language: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.monumentService.addAudio(+monumentId, file, language);
+  }
+
+  @Get(':id/audios')
+  @Public()
+  async getAudios(@Param('id') monumentId: string) {
+    return this.monumentService.getAudios(+monumentId);
+  }
+
+  @Delete('audios/:audioId')
+  @Roles(USERROLES.ADMIN, USERROLES.EXPERT)
+  async deleteAudio(@Param('audioId') audioId: string) {
+    return this.monumentService.deleteAudio(+audioId);
+  }
 }

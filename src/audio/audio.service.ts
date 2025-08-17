@@ -35,4 +35,19 @@ export class AudioService {
       },
     });
   }
+
+  // Récupérer un audio par ID
+  async getAudioById(id: number): Promise<Audio | null> {
+    return this.audioRepository.findOne({ where: { id } });
+  }
+
+  // Supprimer un audio par ID
+  async deleteAudio(id: number): Promise<void> {
+    await this.audioRepository.delete(id);
+  }
+
+  // Supprimer tous les audios d'une entité
+  async deleteAudiosByEntity(entityType: string, entityId: number): Promise<void> {
+    await this.audioRepository.delete({ entityType, entityId });
+  }
 }
