@@ -316,4 +316,40 @@ export class CircuitService {
       throw error;
     }
   }
+
+  async assignDestination(circuitId: number, destinationId: number): Promise<Circuit> {
+    const circuit = await this.circuitRepository.findOne({
+      where: { id: circuitId },
+      relations: ['destination'],
+    });
+
+    if (!circuit) {
+      throw new NotFoundException(`Circuit avec l'ID ${circuitId} introuvable`);
+    }
+
+    const destination = await this.destinationRepository.findOneBy({
+      id: destinationId,
+    });
+
+    if (!destination) {
+      throw new NotFoundException(`Destination avec l'ID ${destinationId} introuvable`);
+    }
+
+    circuit.destination = destination;
+    return await this.circuitRepository.save(circuit);
+  }
+
+  async removeDestination(circuitId: number): Promise<Circuit> {
+    const circuit = await this.circuitRepository.findOne({
+      where: { id: circuitId },
+      relations: ['destination'],
+    });
+
+    if (!circuit) {
+      throw new NotFoundException(`Circuit avec l'ID ${circuitId} introuvable`);
+    }
+
+    circuit.destination = null;
+    return await this.circuitRepository.save(circuit);
+  }
 }

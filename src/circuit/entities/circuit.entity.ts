@@ -52,7 +52,7 @@ export class Circuit {
     nullable: true,
   })
   @JoinColumn({ name: 'destination_id' })
-  destination: Destination;
+  destination: Destination | null;
 
   // Relation avec Monument via CircuitMonument (One-to-Many)
   @OneToMany(

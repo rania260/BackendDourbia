@@ -57,6 +57,7 @@ export class CircuitController {
   }
 
   @Get('image/:imageName')
+  @Public()
   getImage(@Param('imageName') imageName: string, @Res() res: Response) {
     const imagePath = path.join(
       process.cwd(),
@@ -166,5 +167,22 @@ export class CircuitController {
   @Delete('delete/:id')
   remove(@Param('id', ParseIntPipe) id: number): Promise<Circuit | null> {
     return this.circuitService.remove(id);
+  }
+
+  @Patch(':id/assign-destination')
+  @Roles(USERROLES.ADMIN, USERROLES.SUPERADMIN)
+  assignDestination(
+    @Param('id', ParseIntPipe) circuitId: number,
+    @Body('destinationId', ParseIntPipe) destinationId: number,
+  ): Promise<Circuit> {
+    return this.circuitService.assignDestination(circuitId, destinationId);
+  }
+
+  @Patch(':id/remove-destination')
+  @Roles(USERROLES.ADMIN, USERROLES.SUPERADMIN)
+  removeDestination(
+    @Param('id', ParseIntPipe) circuitId: number,
+  ): Promise<Circuit> {
+    return this.circuitService.removeDestination(circuitId);
   }
 }

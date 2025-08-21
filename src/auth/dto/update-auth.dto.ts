@@ -27,5 +27,11 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsEnum(USERROLES)
-  role?: USERROLES;  
+  role?: USERROLES;
+
+  @IsOptional()
+  googleId?: string;
+
+  @IsOptional()
+  emailVerifiedAt?: Date;
 }

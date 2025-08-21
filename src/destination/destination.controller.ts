@@ -10,6 +10,7 @@ import { Destination } from './entities/destination.entity';
 import { Circuit } from '../circuit/entities/circuit.entity';
 import { CloudinaryService } from './cloudinary.service';
 import { multerDestinationOptions } from './multer.config';
+import { Public } from '../auth/guards/public.decorator';
 
 @Controller('destination')
 export class DestinationController {
@@ -33,6 +34,7 @@ export class DestinationController {
   }
 
   @Get('image/:imageName')
+  @Public()
   getImage(@Param('imageName') imageName: string, @Res() res: Response) {
     const imagePath = path.join(process.cwd(), 'uploads', 'destinations', imageName);
     return res.sendFile(imagePath);

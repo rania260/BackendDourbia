@@ -53,6 +53,11 @@ export class Contribution {
   @Column({ nullable: true })
   decidedById: number;
 
+  @ManyToOne(() => User, {
+    nullable: true,
+  })
+  decidedBy: User;
+
   @Column({ nullable: true })
   decidedAt: Date;
 

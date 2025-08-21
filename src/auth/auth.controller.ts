@@ -112,13 +112,75 @@ export class AuthController {
     return this.authService.signin(signinDto);
   }
 
-  @Post('create')
-  @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Créer un utilisateur' })
-  @ApiResponse({ status: 201, description: 'Utilisateur créé' })
-  @ApiResponse({ status: 409, description: 'Email déjà utilisé' })
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.authService.create(createUserDto);
+  @Post('google/signin')
+  async googleSignIn(
+    @Body()
+    googleData: {
+      email: string;
+      name: string;
+      googleId: string;
+      avatar?: string;
+    },
+  ) {
+    try {
+      console.log('Google sign-in data:', googleData);
+
+      // Chercher l'utilisateur par email
+      let user = await this.authService.findUserByEmail(googleData.email);
+
+      if (!user) {
+        // Créer un nouvel utilisateur avec les données Google
+        const userData = {
+          email: googleData.email,
+          username: googleData.name || googleData.email.split('@')[0],
+          password: '', // Pas de mot de passe pour Google OAuth
+          country: '',
+          region: '',
+          phone: '',
+          googleId: googleData.googleId,
+          avatar: googleData.avatar || '',
+          emailVerifiedAt: new Date(),
+        };
+
+        user = await this.authService.createUserLoggedInByGoogle(userData);
+      } else {
+        // Mettre à jour le googleId si l'utilisateur existe
+        if (!user.googleId) {
+          await this.authService.update(user.id, {
+            googleId: googleData.googleId,
+            emailVerifiedAt: user.emailVerifiedAt || new Date(),
+          });
+        }
+      }
+
+      // Générer le token JWT
+      const payload = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      };
+      const accessToken = this.jwtService.sign(payload);
+
+      return {
+        message: 'Connexion Google réussie',
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          avatar: user.avatar,
+          phone: user.phone,
+          country: user.country,
+          region: user.region,
+          isBanned: user.isBanned,
+          emailVerifiedAt: user.emailVerifiedAt,
+        },
+        accessToken,
+      };
+    } catch (error) {
+      console.error('Erreur Google sign-in:', error);
+      throw new BadRequestException('Erreur lors de la connexion Google');
+    }
   }
 
   // @Post('create-expert')

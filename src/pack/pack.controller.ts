@@ -134,4 +134,9 @@ export class PackController {
   getAllPurchases() {
     return this.packService.getAllPurchases();
   }
+
+  @Get('purchases')
+  getPurchases() {
+    return this.packService.getAllPurchases();
+  }
 }

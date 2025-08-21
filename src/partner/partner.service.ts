@@ -10,12 +10,14 @@ import { CreatePartnerDto } from './dto/create-partner.dto';
 import { UpdatePartnerDto } from './dto/update-partner.dto';
 import { USERROLES } from '../utils/enum';
 import { Partner } from './partner.entity';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class PartnerService {
   constructor(
     @InjectRepository(Partner)
     private readonly partnerRepository: Repository<Partner>,
+    private readonly emailService: EmailService,
   ) {}
 
   async createPartner(createPartnerDto: CreatePartnerDto): Promise<Partner> {
@@ -54,9 +56,40 @@ export class PartnerService {
       description: description || '',
       regions: regions || [],
       services: services || [],
+      emailVerifiedAt: new Date(), // Marquer l'email comme vérifié par défaut
     });
 
-    return await this.partnerRepository.save(partner);
+    const savedPartner = await this.partnerRepository.save(partner);
+
+    // Envoyer un email avec les informations de connexion
+    try {
+      const emailSubject = 'Bienvenue sur Dourbia - Votre compte partenaire';
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Bienvenue sur Dourbia !</h2>
+          <p>Bonjour <strong>${username}</strong>,</p>
+          <p>Votre compte partenaire a été créé avec succès. Voici vos informations de connexion :</p>
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Email :</strong> ${email}</p>
+            <p><strong>Mot de passe :</strong> ${password}</p>
+          </div>
+          <p>Vous pouvez maintenant vous connecter à votre compte et commencer à gérer vos services.</p>
+          <p style="color: #dc2626; font-weight: bold;">Pour des raisons de sécurité, nous vous recommandons de changer votre mot de passe lors de votre première connexion.</p>
+          <p>Cordialement,<br>L'équipe Dourbia</p>
+        </div>
+      `;
+
+      await this.emailService.sendEmail({
+        subject: emailSubject,
+        recipients: [{ address: email }],
+        html: emailHtml,
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'envoi de l'email:", error);
+      // Ne pas faire échouer la création du partenaire si l'email échoue
+    }
+
+    return savedPartner;
   }
 
   async findAllPartners(): Promise<Partner[]> {

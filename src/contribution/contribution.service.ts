@@ -60,7 +60,26 @@ export class ContributionService {
 
   async findAll() {
     return this.contributionRepository.find({
-      relations: ['user', 'monument'],
+      relations: ['user', 'monument', 'decidedBy'],
+      select: {
+        user: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+        },
+        monument: {
+          id: true,
+          nom_monument_FR: true,
+          nom_monument_EN: true,
+          nom_monument_AR: true,
+        },
+        decidedBy: {
+          id: true,
+          username: true,
+          role: true,
+        },
+      },
     });
   }
 
@@ -87,6 +106,16 @@ export class ContributionService {
       throw new NotFoundException('Contribution non trouvée');
     }
 
+    const decidedByUser = await this.userRepository.findOne({
+      where: { id: decidedById },
+    });
+
+    if (!decidedByUser) {
+      throw new NotFoundException(
+        'Utilisateur qui prend la décision non trouvé',
+      );
+    }
+
     // Convertir les strings en enums
     contribution.status =
       status === 'accepted'
@@ -94,6 +123,7 @@ export class ContributionService {
         : ContributionStatus.REJECTED;
     contribution.decisionComment = comment;
     contribution.decidedById = decidedById;
+    contribution.decidedBy = decidedByUser;
     contribution.decidedAt = new Date();
 
     return this.contributionRepository.save(contribution);
